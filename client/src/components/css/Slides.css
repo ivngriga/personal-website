@@ -1,0 +1,10 @@
+.SlidesContainer{
+    width: 90%;
+
+    display:flex;
+    border: solid;
+    border-color:azure;
+
+    padding-bottom: 30%
+
+}

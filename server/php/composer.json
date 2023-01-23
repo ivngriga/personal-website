@@ -1,0 +1,14 @@
+{
+    
+    "require": {
+        "monolog/monolog": "@dev",
+        "cheney/pgsql": "@dev"
+    },
+
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./vendor/cheney/pgsql"
+        }
+    ]
+}

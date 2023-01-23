@@ -1,0 +1,19 @@
+{
+    "name": "cheney/pgsql",
+    "description": "php pgsql",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "cheney",
+            "email": "imcheney70@sina.com"
+        }
+    ],
+    "require": {
+        "php": ">7.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Cheney\\Pgsql\\": "src"
+        }
+    }
+}

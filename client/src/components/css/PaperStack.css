@@ -1,0 +1,59 @@
+.PaperStackContainer{
+    height: 150%;
+    display: flex;
+
+    padding-top:10%;
+    padding-bottom:10%;
+}
+
+.PaperTitle{
+    height:20;
+    font-size: 3vw;
+}
+
+.TCDiv{
+    height:80%
+}
+
+.PaperDescription{
+    text-align:left;
+    padding-left:1vw;
+    padding-right:1vw;
+    padding-top:1vw;
+    font-size:1.8vw;
+
+    display: flex;
+    height:80%;
+    overflow: auto;
+}
+
+.PaperFooter{
+    display:flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.PinPaper{
+    margin-right:auto;
+    margin-bottom:1vw;
+    margin-left:1vw;
+    font-size: 2vw;
+}
+
+.Paper{
+    border: solid;
+    border-color:black;
+    width: 40vw;
+    height: 30vw;
+    position: relative;
+    color:darkslategray;
+
+    display:flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    -webkit-transition: all 0.4s ease-in-out;
+    -moz-transition: all 0.4s ease-in-out;
+    -o-transition: all 0.4s ease-in-out;
+    transition: all 0.4s ease-in-out;
+}

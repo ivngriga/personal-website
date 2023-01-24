@@ -2,7 +2,11 @@ import React, {useState} from 'react';
 
 import  './css/PaperStack.css';
 
-import {Paper} from './content/PHPPaperStack';
+interface Paper{
+    title: string,
+    color: string,
+    description: string | JSX.Element
+}
 
 
 const PaperStack: React.FunctionComponent<{PStack: Array<Paper>}> = ({PStack}) => {

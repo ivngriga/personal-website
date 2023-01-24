@@ -1,11 +1,5 @@
 import React from 'react';
 
-export interface Paper{
-    title: string,
-    color: string,
-    description: string
-}
-
 export const PHPPaperStack = [
     {
         "title": "PHP Rest API Framework",

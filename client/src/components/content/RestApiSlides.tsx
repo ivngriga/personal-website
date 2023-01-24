@@ -12,7 +12,8 @@ export interface IData{
 
 interface slideProps{
     updateFunction: Function,
-    data?: IData
+    data?: IData,
+    children?: React.ReactElement;
 }
 
 interface requestInfo {
@@ -27,12 +28,18 @@ export const Slide1: React.FunctionComponent<slideProps> = ({updateFunction, dat
         <div className="SlideContainer">
             <div className="SlideBody">
                 To test the rest api, you must first enter a username and password. Then you will be able to use presets or generate custom requests inside this widget to interact with/test the api.
-            </div> <br></br>
+            </div>
+            
+
             <div className="SlideFooter">
-                <UsernameForm updateFunction={updateFunction} data={data}/>
+                
+            <UsernameForm updateFunction={updateFunction} data={data}>
                 <div className="SlideNumber">
                     You are on slide 1/{AllSlides.length}.
                 </div>
+            </UsernameForm>
+
+                
             </div>
 
             
@@ -184,7 +191,7 @@ export const Slide4: React.FunctionComponent<slideProps> = ({updateFunction, dat
     }
 }
 
-const UsernameForm: React.FunctionComponent<slideProps> = ({updateFunction, data}) => {
+const UsernameForm: React.FunctionComponent<slideProps> = ({updateFunction, data, children}) => {
     const [username, setUsername] = useState(data?.username || "");
     const [password, setPassword] = useState("");
     const [pfDisabled, setPF] = useState(true);
@@ -196,7 +203,7 @@ const UsernameForm: React.FunctionComponent<slideProps> = ({updateFunction, data
     var passwordRegex = /^[a-zA-Z0-9#?!@$%^&*-]+$/;
 
     return(
-        <div>
+        <div className="GlobalContainer">
         <form className='UsernameForm'>
             <div className="ErrorMessage">
                 {errorMSG}
@@ -218,8 +225,10 @@ const UsernameForm: React.FunctionComponent<slideProps> = ({updateFunction, data
             </div>
         </form>
 
-        <div>
+        <div className="FlexRow">
             <button type='submit' className="ButtonForm" onClick={handleSubmit}> {buttonText} </button>
+
+            {children}
         </div>
         </div>
     )

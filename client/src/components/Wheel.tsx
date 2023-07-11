@@ -1,4 +1,6 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
+
+import arrow from './icons/arrow-icon-white.png';
 
 import './css/Wheel.css';
 
@@ -11,23 +13,33 @@ export interface ShortItem{
 const Wheel: React.FunctionComponent<{shortItems: Array<ShortItem>}> = ({shortItems}) => {
     const [currentItem, setCurrentItem] = useState(0);
     const [currentDegree, setCurrentDegree] = useState(0);
+    const [resizing, setResizing] = useState(false);
     const itemCount = shortItems.length;
+    const resizeClass=resizing ? " resize-animation-stopper":" animate-half-sec"
+
+    window.addEventListener('resize', () => {
+        setResizing(true);
+        setTimeout(()=>{
+            setResizing(false)
+        },200)
+    })
+
 
     return (
         <div className='WheelContainer' style={{marginTop: "10vw", marginBottom: "10vw", marginLeft: "10vw"}}>
-            <div className="HollowCircle" id="wheel">
+            <div className={"HollowCircle"+resizeClass} id="wheel">
                 {
                     shortItems.map((item, index) => {
                         var rotate=-index*(360/itemCount);
                         var rotateCompensation=-currentDegree-rotate;
-                        var boxClassName="TitleBox"
-                        var textClassName="TitleText"
+                        var boxClassName="TitleBox"+resizeClass
+                        var textClassName="TitleText"+resizeClass
 
                         console.log(window.innerWidth)
 
                         if(index===currentItem){
-                            boxClassName="TitleBoxCurrentItem"
-                            textClassName="TitleText selectedText"
+                            boxClassName="TitleBoxCurrentItem"+resizeClass
+                            textClassName="TitleText selectedText"+resizeClass
                         } else if (window.innerWidth<=480) {
                             rotate+=90
                             rotateCompensation-=90
@@ -58,12 +70,12 @@ const Wheel: React.FunctionComponent<{shortItems: Array<ShortItem>}> = ({shortIt
                     )}
 
                     <div className="ButtonContainer">
-                        <div className="PrevButton icon" onClick={()=>moveToIndex(currentItem, currentItem-1, setCurrentItem, itemCount, currentDegree, setCurrentDegree)}>
-                            <div className="arrow" ></div>
+                        <div className="PrevButton" onClick={()=>moveToIndex(currentItem, currentItem-1, setCurrentItem, itemCount, currentDegree, setCurrentDegree)}>
+                            <img className="ArrowIcon" src={arrow}></img>
                         </div>
 
-                        <div className="NextButton icon" onClick={()=>moveToIndex(currentItem, currentItem+1, setCurrentItem, itemCount, currentDegree, setCurrentDegree)}>
-                            <div className="arrow" ></div>
+                        <div className="NextButton" onClick={()=>moveToIndex(currentItem, currentItem+1, setCurrentItem, itemCount, currentDegree, setCurrentDegree)}>
+                            <img className="ArrowIcon" src={arrow}></img>
                         </div>
                     </div>
                     <div className="Clear"> </div>

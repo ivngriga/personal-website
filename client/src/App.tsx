@@ -26,6 +26,7 @@ function App() {
                 <Route path='/rest-api' element={<Python />} /> 
                 <Route path='/php' element={<PHP />} />
                 <Route path='/typescript' element={<Typescript />} /> 
+                <Route path='/python' element={<Python />} /> 
             </Routes>
         </Router>
       </header>

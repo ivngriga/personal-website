@@ -12,12 +12,14 @@
 
     float: left;
 
+    z-index: 1;
+}
+
+.animate-half-sec{
     -webkit-transition: all 0.5s ease-in-out;
     -moz-transition: all 0.5s ease-in-out;
     -o-transition: all 0.5s ease-in-out;
     transition: all 0.5s ease-in-out;
-
-    z-index: 1;
 }
 
 .WheelContainer{
@@ -30,49 +32,12 @@
     flex-direction: row;
     align-content: center;
     justify-content: center;
+
     gap:2vw;
 
     margin-left:auto;
-    margin-right:0.5vw;
-    margin-bottom: 0.5vw;
-}
 
-
-.icon {
-    position: relative;
-    width: 4vw;
-    height: 3vw;
-    cursor: pointer;
-  }
-  
-.arrow {
-    position: relative;
-    top: 1.25vw;
-    width: 90%;
-    height: 0.5vw;
-    background-color: #fff;
-    box-shadow: 0 3px 5px rgba(0, 0, 0, .2);
-    animation: arrow 700ms linear infinite;
-  }
-  
-.arrow::after, .arrow::before {
-    content: '';
-    position: absolute;
-    width: 60%;
-    height: 0.5vw;
-    right: -0.4vw;
-    background-color: #fff;
-}
-  
-.arrow::after {
-    top: -0.6vw;
-    transform: rotate(45deg);
-}
-  
-.arrow::before {
-    top: 0.6vw;
-    box-shadow: 0 3px 5px rgba(0, 0, 0, .2);
-    transform: rotate(-45deg);
+    height:80%;
 }
 
 .HollowCircle:before{
@@ -119,14 +84,10 @@
 .DescriptionBoxFooter{
     display:flex;
     flex-direction: row;
-    align-content:space-between;
+    align-items:center;
     width:100%;
-    justify-content: space-between;
-
-    -webkit-transition: all 0.5s ease-in-out;
-    -moz-transition: all 0.5s ease-in-out;
-    -o-transition: all 0.5s ease-in-out;
-    transition: all 0.5s ease-in-out;
+    justify-content: center;
+    height:25%;
 }
 
 .TitleBox{
@@ -148,11 +109,6 @@
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* IE10+/Edge */
     user-select: none; /* Standard */
-
-    -webkit-transition: all 0.5s ease-in-out;
-    -moz-transition: all 0.5s ease-in-out;
-    -o-transition: all 0.5s ease-in-out;
-    transition: all 0.5s ease-in-out;
 }
 
 .TitleBoxCurrentItem{
@@ -161,11 +117,6 @@
 
     left: 42vw;
     top: 12vw;
-
-    -webkit-transition: all 0.5s ease-in-out;
-    -moz-transition: all 0.5s ease-in-out;
-    -o-transition: all 0.5s ease-in-out;
-    transition: all 0.5s ease-in-out;
 }
 
 .TitleText{
@@ -181,11 +132,6 @@
 
     background-color: rgba(75,81,94,0.5);
     position:absolute;
-
-    -webkit-transition: all 0.5s ease-in-out;
-    -moz-transition: all 0.5s ease-in-out;
-    -o-transition: all 0.5s ease-in-out;
-    transition: all 0.5s ease-in-out;
 }
 
 .selectedText{
@@ -197,27 +143,31 @@
     padding-left: 1vw;
 
     background-color: #4b515e;
+}
 
-    -webkit-transition: all 0.5s ease-in-out;
-    -moz-transition: all 0.5s ease-in-out;
-    -o-transition: all 0.5s ease-in-out;
-    transition: all 0.5s ease-in-out;
+.ArrowIcon{
+    width:100%;
+    height: 100%;
 }
 
 .Clear{
     clear: both;
 }
 
-.NextButton{
-}
-
 .PrevButton{
+    width:100%;
+    height:100%;
     -webkit-transform: scaleX(-1);
     transform: scaleX(-1);
 }
 
+.NextButton{
+    width:100%;
+    height:100%;
+}
+
 .LearnMore{
-    float: left;
+    height:50%;
 }
 
 /* SMALL COMPUTER SCREENS */
@@ -263,6 +213,11 @@
     }
 
     
+}
+
+.resize-animation-stopper * {
+    animation: none !important;
+    transition: none !important;
 }
 
 /* PHONE SCREENS */

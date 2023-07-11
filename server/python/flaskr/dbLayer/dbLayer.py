@@ -28,6 +28,7 @@ class Table ():
         self.name=name
         self.basemodel=basemodel
         self.columns=self.getColumns()
+        self.nonnullablecolumns=self.getColumns({"is_nullable":"NO"})
 
 
     def __repr__(self):
@@ -41,17 +42,19 @@ class Table ():
             finalstring+=str(key)+" = %s and "
             finallist.append(value)
 
-        return self.basemodel._executeQuery(f"SELECT * FROM {self.name} WHERE {finalstring[:-4]} {suffix} LIMIT {limit}", finallist)
+        return self.basemodel._executeQuery(f"SELECT * FROM {self.name} WHERE {finalstring[:-4]} {suffix} LIMIT {limit};", finallist)
+
 
     def getRecord(self, params={}):
         finalstring=""
         finallist=[]
         
         for key, value in params.items():
-            finalstring+=str(key)+" = %s and"
+            type(value)
+            finalstring+=str(key)+" = %s and "
             finallist.append(value)
 
-        return self.basemodel._executeQuery(f"SELECT * FROM {self.name} WHERE {finalstring[:-3]} LIMIT 1;", finallist)
+        return self.basemodel._executeQuery(f"SELECT * FROM {self.name} WHERE {finalstring[:-5]} LIMIT 1;", finallist)
 
     def getColumns(self, params={}):
         # table_name => string must be first value in params!!
@@ -59,12 +62,15 @@ class Table ():
         finallist=[]
         
         for key, value in params.items():
-            finalstring+="and "+key+" = '"+value+"'"
+            finalstring+=f" and {key} = %s"
             finallist.append(value)
 
-        return [x[0] for x in self.basemodel._executeQuery("SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS "+finalstring, finallist)]
+        finallist=tuple(finallist)
 
-    def updateRecord(self, toUpdate, params):
+        query=self.basemodel._executeQuery(f"SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS {finalstring}", finallist)
+        return [x[0] for x in query]
+
+    def updateRecords(self, toUpdate, params):
         strWhere=""
         strToUpdate=""
 
@@ -72,12 +78,15 @@ class Table ():
             strWhere+=f"{key}='{value}',"
 
         for key,value in toUpdate.items():
-            strToUpdate+=f"{key}='{value}',"
+            val=str(value).replace("'","")
+            strToUpdate+=f"{key}='{val}',"
+
+        strToUpdate=strToUpdate
+
+        print(f"UPDATE {self.name} SET {strToUpdate[:-1]} WHERE {strWhere[:-1]}")
 
         
-        self.basemodel._executeQuery(f"""UPDATE {self.name}
-        SET {strToUpdate[:-1]}
-        WHERE {strWhere[:-1]}""", [])
+        return self.basemodel._executeQuery(f"UPDATE {self.name} SET {strToUpdate[:-1]} WHERE {strWhere[:-1]}", [])
     
     def genID(self):
         return random.randint(1000000,9999999)
@@ -87,40 +96,35 @@ class Table ():
     
     def createEntry(self, params={}):
         vals=[]
+        genColumns=tuple(self.nonnullablecolumns)
+        columns=[]
 
-        columns=self.getColumns({"is_nullable":"NO"})
-        
-        for field in columns:
-            if("id" in field):
-                vals.append(self.genID())
-            elif("time" in field):
-                vals.append(f"{self.getTime()}")
+        if(not columns==False):
+            for field in genColumns:
+                if("id" in field):
+                    vals.append(self.genID())
+                elif("time" in field):
+                    vals.append(f"{self.getTime()}")
+                columns.append(field)
 
-        
-
-
-        for key,value in params.items():
-            try:
+            for key,value in params.items():
                 vals.append(str(value).replace("'",""))
                 columns.append(key)
-            except Exception as err:
-                return str(err)
-        
-        columns=repr(tuple(columns)).replace("'","")
-        valstr=repr(tuple(vals))
-        msg=f"""INSERT INTO {self.name} {columns} VALUES {valstr};"""
-        #return msg
-        result = self.basemodel._executeQuery(msg)
+            
+            columnsstr=repr(tuple(columns)).replace("'","")
+            valstr=repr(tuple(vals))
 
-        if(result == False):
-            return False
-        
-        return dict(zip(columns, vals))
+            query=f"INSERT INTO {self.name} {columnsstr} VALUES {valstr};"
+            #return msg
+            result = self.basemodel._executeQuery(query)
 
+            if(result == False):
+                raise Exception("Couldn't execute query")
+            
+            return dict(zip(columns, vals))
+        else:
+            raise Exception("Couldn't fetch columns")
 
-class Record():
-    def __init__(self, params):
-        self.params=params
 
 class BaseModel():
     def __init__(self, dbstring):
@@ -130,20 +134,27 @@ class BaseModel():
         # This code takes a query and executes it
         qtype=qstring.split(" ")[0]
         cursor = self.conn.cursor()
-
-        cursor.execute(qstring, params)
+        try:
+            if(params==[]): cursor.execute(qstring)
+            else: cursor.execute(qstring, params)
+            
+        except:
+            raise Exception(f'Couldnt execute: cursor.execute("{qstring}", {params})')
 
         try:
             self.conn.commit()
         except:
-            return False
+            raise Exception("Couldn't commit changes")
         
 
         if(qtype=="SELECT"):
             result=cursor.fetchall()
             if(cursor.rowcount==0):
                 return None
+
         elif(qtype=="INSERT"):
+            result=True
+        elif(qtype=="UPDATE"):
             result=True
         else:
             result=True

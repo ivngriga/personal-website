@@ -1,0 +1,171 @@
+.FlexRow{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.FlexCol{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.ChatCont{
+    color:#333333;
+    text-align:left;
+
+    width: 100%;
+    height: 100%;
+    background-color:aquamarine;
+}
+
+.ViewChats{
+    font-size: 3vw;
+    justify-content: start;
+    padding: 1%;
+    gap: 2%;
+    height:100%;
+    width:30%;
+    background-color:#293242;
+    color: aliceblue;
+    overflow-y: auto;
+}
+
+.SelectedChat{
+    width:70%;
+    height:100%;
+}
+
+.ChatHeading{
+    display: flex;
+
+    font-size: 2rem;
+
+    height:10%;
+    width:100%;
+    background-color: #4b566a;
+
+    align-items: center;
+    justify-content: center;
+
+    color:aliceblue;
+}
+
+.ChatMessages{
+    border: solid;
+    border-color: #293242;
+
+    height:100%;
+    width:100%;
+    background-color: #b1b1b1;
+
+    word-wrap: break-word;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.ChatEntry{
+    border: solid;
+    border-color: #293242;
+    
+    max-height: 50%;
+    overflow:hidden;
+
+    width:100%;
+    background-color: #E0E0E0;
+}
+
+.ChatSelector{
+    white-space: nowrap;
+
+    max-height: 2rem;
+    font-size: 1rem;
+
+    padding:0.2rem 0.5rem 0.2rem 0.5rem;
+    width:100%;
+
+    background-color:#4b566a
+}
+
+.StartNewChat{
+    margin-top: 0.5rem;
+    background-color:#4b6a55;
+}
+
+.ClearChats{
+    background-color:#6a4b4b;
+}
+
+.ChatViewHeading{
+    font-size:1.5rem;
+    margin-bottom:0.5rem;
+}
+
+.HideOverflow{
+    overflow:hidden;
+    white-space: nowrap;
+}
+
+.InputContainer{
+    position: relative;
+
+    width:100%;
+    height:100%;
+}
+
+.SendMessageBtn{
+    position:absolute;
+
+    width:5vw;
+    height:5vw;
+    bottom:0;
+    right:0;
+
+    font-size:.5rem;
+}
+
+.MsgContainer{
+    width:100%;
+    padding:2%;
+    font-size:0.75rem;
+}
+
+.UserSent{
+    text-align:left;
+    border:solid;
+    
+}
+
+.prefixAISent{
+    color:rgb(211, 52, 52);
+}
+
+.prefixUserSent{
+    color:rgb(76, 237, 255);
+}
+
+.AISent{
+    border:solid;
+}
+
+textarea {
+    width:100%;
+    max-height: 100%;
+}
+
+@media screen and (max-width: 540px) {
+    .ChatViewHeading{
+        font-size:0.5rem;
+    }
+
+    .ChatSelector{
+        max-height: 1rem;
+        font-size: 0.5rem;
+    
+        padding:0.1rem 0.25rem 0.1rem 0.25rem;
+    }
+
+    .ChatHeading{
+        font-size: 0.75rem;
+    }
+}

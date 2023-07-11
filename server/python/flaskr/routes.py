@@ -9,6 +9,8 @@ sys.path.append("/Users/ivano/Desktop/ivngriga-website/server/python/flaskr")
 from dbLayer.dbLayer import DB, Table;
 from ailayer.ailayer import AIModel
 
+
+
 class bp():
     def __init__(self,app,devmode=False):
         self.blueprint = Blueprint('routes', __name__)
@@ -21,16 +23,105 @@ class bp():
         self.message="Operation Successful"
         self.data={}
 
-        self.descPrompt=f"You are Ivan Griga, a Ukrainian/Hungarian 18 y.o. programming enthusiast studying in Bocconi, Milan, Italy who is profficient in react/typescript, python, PHP, SQL, C, GIT and other technologies. Below is a conversation between Ivan (2) and a potential recruiter (1). Respond in a professional way (1-3 sentences) to make the recruiter want to hire you. \n\n"
-        self.condensePrompt=f"Your job is to condense text messages into 10 bullet-point lists summarizing the most vital information.\n\n"
-        self.condenseSuffix=f"Use the bullet points and the text messages above to generate a new 10 bullet point summary.\n\n10 Bulletpoint Sumary:\n    -"
+        self.descPrompt=f"You are Ivan Griga (1), a Ukrainian/Hungarian 18 y.o. programming enthusiast studying in Bocconi, Milan, Italy who is profficient in react/typescript (1.5yrs), python (4yrs), PHP (2yrs), SQL (2yrs), C (0.5yrs), GIT (2yrs) and other technologies. Below is an instagram conversation between Ivan (1) and a stranger (2)."
+        self.descSuffix=f"Respond in 1 sentence."
         
+        self.condensePrompt=f"Below is a conversation between you (1) and a stranger (2) Transform the text conversation below into a concise bullet-point list, summarizing the most important information and key takeaways about 1 and 2.\n\n"
+        self.condenseSuffix=f"\n\nSummary:\n"
+
+        self.condenseBulletPrompt=f"Below are two sets of lists that you must combine into a single list containing the most vital information from both lists.\n\n"
+        self.condenseBulletSuffix=f"\n\nSummary:\n"
+        
+        # required fields for createMessage {'conversationid':int, 'msgtext':str, 'aisender': bool}
         self.blueprint.route('/createMessage', methods=["POST"])(self.createMessage)
+
+        # required fields for createConversation {}
         self.blueprint.route('/createConversation', methods=["POST"])(self.createConversation)
+
+        # required fields for createModel {'promptPrefix':str, 'promptSuffix':str}
+        self.blueprint.route('/createModel', methods=["POST"])(self.createModel)
+
+        # required fields for getResponse {'conversationid':int, 'modelid':int}
         self.blueprint.route('/getResponse', methods=["POST"])(self.getResponse)
+
+        # required fields for condenseMessages {'conversationid':int}
         self.blueprint.route('/condenseMessages', methods=["POST"])(self.condenseMessages)
 
-        self.aimodel=AIModel("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")
+        # required fields for getMessages {'conversationid':int, 'limit':int}
+        self.blueprint.route('/getMessages', methods=["GET"])(self.getMessages)
+
+        self.aimodel=AIModel("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")
+
+    def createModel(self):
+        try:
+            requiredfields={'promptPrefix':str, 'promptSuffix':str}
+            data = request.get_json()
+            
+        except Exception as err:
+            self.status=400
+            self.message=f"Failed Parsing Json Body"
+            if(self.devmode==True):
+                self.returnDevInfo(err)
+
+            return self.sendOutput()
+
+        if(self.validateTypes(data, requiredfields)==False):
+            #Incorrect input
+            self.status=400
+            self.message=f"Error: param(s) have incorrect type or are missing."
+
+            if(self.devmode==True):
+                self.returnDevInfo(err)
+
+            return self.sendOutput()
+
+        try:
+            model=self.database["models"].createEntry({
+                "promptPrefix":data["promptPrefix"],
+                "promptSuffix":data["promptSuffix"]
+            })
+            self.data["model"]=model
+            self.status=200
+            self.message=f"Success: new model created"
+        except Exception as err:
+            self.status=500
+            self.message=f"Internal server error (Couldn't create a new conversation)"
+            if(self.devmode==True):
+                self.returnDevInfo(err)
+
+        return self.sendOutput()
+    
+    def getMessages(self):
+
+        requiredfields={'conversationid':int, 'limit':int}
+
+        convid = request.args.get('conversationid')
+        limit = request.args.get('limit')
+
+        if(self.validateTypes({'conversationid':convid, "limit":limit}, requiredfields)==False):
+            self.status=400
+            self.message=f"Limit/Conversation ID not present/invalid"
+            return self.sendOutput()
+
+        asc = request.args.get('asc')
+        if(asc==None):
+            asc="ASC"
+
+        # Validate that a conversation with the specified conversationid exists
+        conv=self.database["conversations"].getRecord({"conversationid":int(convid)})
+        if(conv==None):
+            self.status=400
+            self.message=f"Error: conversation with specified ID does not exist."
+            return self.sendOutput()
+
+        messages=self.database["messages"].getRecords(limit, {
+            "conversationid":int(convid),
+        }, " ORDER BY msgtime "+asc)
+
+        self.status=200
+        self.message=f"Success, messages retrieved."
+        self.data["messages"]=messages
+        return self.sendOutput()
 
     def validateTypes(self, input, types):
         """Takes two dicts: one is input {columnname: value} and one is required fields {columnname: type}"""
@@ -38,19 +129,15 @@ class bp():
             try:
                 converted=value(input[key])
                 assert isinstance(converted,value)
-            except Exception as err:
-                print(key,value)
-                self.status=400
-                self.message=f"Error: {key} has incorrect type or is missing."
-                self.data["exception"]=str(err)
+            except Exception:
                 return False
         
         return True
             
     def createConversation(self):
         try:
-            self.database["conversations"].createEntry({"condensation":""})
-
+            conversation=self.database["conversations"].createEntry({"condensation":""})
+            self.data["conversation"]=conversation
             self.status=200
             self.message=f"Success: new conversation created"
         except Exception as err:
@@ -66,12 +153,28 @@ class bp():
         try:
             requiredfields={'conversationid':int, 'msgtext':str, 'aisender': bool}
             data = request.get_json()
+            
+        except Exception as err:
+            self.status=400
+            self.message=f"Failed Parsing Json Body"
+            if(self.devmode==True):
+                self.returnDevInfo(err)
 
-            # Validate that the types of input are correct
-            if(self.validateTypes(data, requiredfields)==False):
-                #Incorrect input
-                return self.sendOutput()
-                
+            return self.sendOutput()
+
+        # Validate that the types of input are correct
+        if(self.validateTypes(data, requiredfields)==False):
+            #Incorrect input
+            self.status=400
+            self.message=f"Error: param(s) have incorrect type or are missing."
+
+            if(self.devmode==True):
+                self.returnDevInfo(err)
+
+            return self.sendOutput()
+
+
+        try:
             # Validate that a conversation with the specified conversationid exists
             conv=self.database["conversations"].getRecord({"conversationid":data["conversationid"]})
             if(conv==None):
@@ -84,8 +187,9 @@ class bp():
                 "conversationid":data["conversationid"],
                 "aisender":data["aisender"],
                 "condensed":False})
-            
+
             self.data["msg"]=output
+
 
         except Exception as err:
             self.status=500
@@ -96,88 +200,121 @@ class bp():
         return self.sendOutput()
 
     def getResponse(self):
-        requiredfields={'conversationid':int}
+        requiredfields={'conversationid':int, 'modelid':int}
         data = request.get_json()
         # Validate that the types of input are correct
         if(self.validateTypes(data, requiredfields)==False):
+            self.status=400
+            self.message=f"Error: param(s) have incorrect type or are missing."
             return self.sendOutput()
 
-        try:
-            messages=self.database["messages"].getRecords(10, {
-                "conversationid":data["conversationid"],
-                "condensed":False
-            }, "ORDER BY msgtime")
+        convRecords=self.database["messages"].getRecords(15, {"conversationid":data["conversationid"], "condensed":False})
 
-            if(not (messages==None) and len(messages)>10):
-                return self.condenseMessages(messages)
+        if((not convRecords==None) and (not convRecords==False) and (len(convRecords)>=10)):
+            self.condenseMessages(False)
 
-            condensation=self.database["conversations"].getRecord({"conversationid":data["conversationid"]})[0][1]
-            finalprompt=self.descPrompt+condensation+self.processMessages(messages)
-            response=self.aimodel.complete(finalprompt, 500)["choices"][0]["text"]
+        
+        messages=self.database["messages"].getRecords(7, {
+            "conversationid":int(data["conversationid"]),
+        }, "ORDER BY msgtime DESC")
+
+        if(not messages==None):
+            messages=reversed(messages)
+
+        model=self.database["models"].getRecord({"modelid":int(data["modelid"])})[0]
+        condensation=self.database["conversations"].getRecord({"conversationid":int(data["conversationid"])})[0][1]
+        finalprompt=model[1]+"\n\nPast conversation summary:\n"+condensation+self.processMessages(messages, False)+"\n\n"+model[2]+"\n\n1:"
+        print(finalprompt)
+        response=self.aimodel.complete(finalprompt, 256, 1.3, 1.5)["choices"][0]["text"]
+        
+        self.status=200
+        self.message="Success"
+        self.data["response"]=response
+        if(self.devmode==True):
+            self.data["prompt"]=finalprompt
+
             
-            self.status=200
-            self.message="Success"
-            self.data["response"]=response
-            if(self.devmode==True):
-                self.data["prompt"]=finalprompt
 
-        except Exception as err:
-            self.status=500
-            self.message=f"Internal server error (Couldn't fetch records)"
-
-            if(self.devmode==True):
-                self.returnDevInfo(err)
+        
 
             
 
         return self.sendOutput()
 
-    def condenseMessages(self):
+    def condenseMessages(self, toReturn=False):
         requiredfields={'conversationid':int}
         data = request.get_json()
 
         if(self.validateTypes(data, requiredfields)==False):
-            return self.sendOutput()
+            if(toReturn):
+                self.status=400
+                self.message=f"Error: param(s) have incorrect type or are missing."
+                return self.sendOutput()
+            else:
+                return False
 
-        try:
-            convid=data["conversationid"]
-            conversations=self.database["conversations"].getRecord({"conversationid":convid})
-            condensation=conversations[0][1]
+        
+        convid=data["conversationid"]
 
-            if(len(conversations)!=1):
+        conversations=self.database["conversations"].getRecord({"conversationid":int(convid)})
+        condensation=conversations[0][1]
+
+        if(len(conversations)!=1):
+            if(toReturn):
                 self.status=400
                 self.message=f"Invalid conversationid."
                 return self.sendOutput()
+            else:
+                return False
 
-            messages=self.database["messages"].getRecords(10, {
-                "conversationid":data["conversationid"],
-                "condensed":False
-            }, "ORDER BY msgtime")
 
-            if(len(messages)<3):
+        messages=self.database["messages"].getRecords(10, {
+            "conversationid":int(convid),
+            "condensed":False
+        }, "ORDER BY msgtime")
+
+        if(len(messages)<3):
+            if(toReturn):
                 self.status=400
                 self.message=f"Less than 3 new messages. Can't condense yet."
                 return self.sendOutput()
-
+            else:
+                return False
+                
+        try:
             messages=self.processMessages(messages, False)
-            finalprompt=self.condensePrompt+condensation+"\n\n"+messages+self.condenseSuffix
-            completion=self.aimodel.complete(finalprompt, 500)["choices"][0]["text"]
-            
+            finalprompt=self.condensePrompt+messages+self.condenseSuffix
+            print(finalprompt)
+            completion=self.aimodel.complete(finalprompt, 256, 0.1, 0.1)["choices"][0]["text"]
+
+            if(not condensation==""):
+                finalprompt=self.condenseBulletPrompt+"Summary 1:\n"+condensation+"\n\nSummary 2:\n"+completion+self.condenseBulletSuffix
+                completion=self.aimodel.complete(finalprompt, 256, 0.1, 0.1)["choices"][0]["text"]
+
             
             #(toUpdate, identifiers)
-            self.database["conversations"].updateRecord({"condensation":completion}, {"conversationid":convid})
+            self.database["conversations"].updateRecords({"condensation":completion}, {"conversationid":int(convid)})
+            self.database["messages"].updateRecords({"condensed":True}, {"conversationid":int(convid)})
 
-            self.status=200
-            self.message=f"Success, messages condensed"
-            self.data["condensation"]=completion
-            if(self.devmode==True):
-                self.data["prompt"]=finalprompt
+            if(toReturn):
+                self.status=200
+                self.message=f"Success, messages condensed"
+                self.data["condensation"]=completion
+                if(self.devmode==True):
+                    self.data["prompt"]=finalprompt
+            else:
+                return True
+
+            
         except Exception as err:
-            self.status=500
-            self.message=f"Internal server error (Couldn't condense messages)"
+            if(toReturn):
+                self.status=500
+                self.message=f"Internal server error (Couldn't condense messages)"
 
-            if(self.devmode==True):
-                self.returnDevInfo(err)
+                if(self.devmode==True):
+                    self.returnDevInfo(err)
+            else:
+                return False
 
         return self.sendOutput()
 
@@ -188,15 +325,18 @@ class bp():
             "message": self.message,
             "data": self.data
         }
+        self.data={}
         return jsonify(output), self.status
     
     def processMessages(self, msgs, include=True):
         try:
             finalstr=""
-
+            
             for msg in msgs:
+                print(msg)
                 user="1" if msg[3] else "2"
-                finalstr+=f"{user}: {msg[1]}\n"
+                finalstr+=f"{user}: {msg[1]}\nSent at:"+str(msg[4])+"\n"
+                print(finalstr)
             
             if(include==True):
                 finalstr+="1:"

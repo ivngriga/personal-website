@@ -1,5 +1,6 @@
 import os;
 from flask import Flask;
+from flask_cors import CORS;
 
 import sys; 
 sys.path.append("/Users/ivano/Desktop/ivngriga-website/server/python/flaskr")
@@ -10,6 +11,8 @@ from routes import bp;
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    cors = CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+
     app.config.from_mapping(
         SECRET_KEY='dev',
         DBDSN="host='127.0.0.1' dbname='flask-db' user='postgres' password='Qazwer333'"
@@ -29,8 +32,8 @@ def create_app(test_config=None):
         pass
 
     # a simple page that says hello
-    print("HIIII")
     blueprint=bp(app,True)
+    
     app.register_blueprint(blueprint.blueprint)
 
     return app

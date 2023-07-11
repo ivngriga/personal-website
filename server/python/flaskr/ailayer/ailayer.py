@@ -6,11 +6,13 @@ class AIModel():
         openai.api_key = apikey
         
 
-    def complete(self,prompt, maxtokens):
+    def complete(self,prompt, maxtokens,temp=1.0,freq_pen=0.6):
         completion=openai.Completion.create(
             model="text-davinci-003",
             prompt=prompt,
             max_tokens=maxtokens,
-            temperature=0
+            temperature=temp,
+            frequency_penalty=freq_pen
         )
+        print(completion)
         return completion

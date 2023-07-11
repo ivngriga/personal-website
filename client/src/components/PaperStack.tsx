@@ -13,8 +13,6 @@ const PaperStack: React.FunctionComponent<{PStack: Array<Paper>}> = ({PStack}) =
     const [hoveringOver, setHoveringOver]=useState(-1000);
     const [pinned, setPinned]=useState(false);
 
-    console.log(pinned)
-
     return (
         <div className='PaperStackContainer'>
             {
@@ -48,7 +46,7 @@ const PaperStack: React.FunctionComponent<{PStack: Array<Paper>}> = ({PStack}) =
                     }
 
                     return(
-                        <div className={paperClass}
+                        <div key={index.toString()} className={paperClass}
                             onMouseOver={() => setSelected(index)}
                             onMouseOut={() => deSelect(index)} 
                             style={{
@@ -67,10 +65,10 @@ const PaperStack: React.FunctionComponent<{PStack: Array<Paper>}> = ({PStack}) =
                                         {item.description}
                                     </div>
                                 </div>
-                            </div>
+                            </div> 
 
-                            <div className='PaperFooter'>
-                                <button disabled={buttonInfo.disabled} className={buttonInfo.class} onClick={()=>pin(index)}>{buttonInfo.text}</button>
+                            <div key={index.toString()} className='PaperFooter'>
+                                <button key={index.toString()} disabled={buttonInfo.disabled} className={buttonInfo.class} onClick={()=>pin(index)}>{buttonInfo.text}</button>
                             </div>
                         </div>
                     )

@@ -21,8 +21,6 @@ const Slides: React.FunctionComponent<SlidesInterface> = ({allSlides}) => {
         if(slideID!=undefined) setSlide(slideID);
     }
 
-    console.log(data);
-
     function getSlide(i: number){
         let Component=allSlides[i];
         return <Component updateFunction={updateData} data={data}/>

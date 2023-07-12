@@ -50,7 +50,7 @@ class bp():
         # required fields for getMessages {'conversationid':int, 'limit':int}
         self.blueprint.route('/getMessages', methods=["GET"])(self.getMessages)
 
-        self.aimodel=AIModel("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")
+        self.aimodel=AIModel("<OPENAI API KEY HERE>")
 
     def createModel(self):
         try:
